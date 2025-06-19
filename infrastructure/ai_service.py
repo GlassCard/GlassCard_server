@@ -13,7 +13,7 @@ class AIService:
     def _get_model(cls):
         """모델을 lazy loading으로 가져오기"""
         if cls._model is None:
-            cls._model = SentenceTransformer('all-MiniLM-L6-v2')
+            cls._model = SentenceTransformer('jhgan/ko-sroberta-multitask')
         return cls._model
     
     @staticmethod
