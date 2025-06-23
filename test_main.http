@@ -10,6 +10,7 @@ Accept: application/json
 
 ###
 
+<<<<<<< HEAD
 ### Health Check
 GET http://127.0.0.1:8000/health
 Accept: application/json
@@ -390,3 +391,196 @@ POST http://127.0.0.1:8000/api/v1/compare?meaning=사랑,행복,기쁨,감사,�
 Content-Type: application/json
 
 ###
+=======
+### GlassCard API 테스트 (Access Key 인증 포함)
+
+### 1. 헬스 체크
+GET http://localhost:8000/health
+
+### 2. 단어장 생성
+POST http://localhost:8000/v1/vocab-list/
+Content-Type: application/json
+
+{
+  "title": "1학년 영어 단어장",
+  "description": "1학년 학생들을 위한 기본 영어 단어장",
+  "expires_at": "2024-12-31T23:59:59",
+  "access_key": "grade1-key",
+  "tags": ["1학년", "영어", "기초"]
+}
+
+### 3. 단어장과 단어들을 한 번에 생성 (자동 품사 추출 테스트 - 한국어)
+POST http://localhost:8000/v1/vocab-list/with-items
+Content-Type: application/json
+
+{
+  "title": "자동 품사 추출 테스트 (한국어)",
+  "description": "한국어 품사 표기에서 자동으로 추출하는 기능 테스트",
+  "expires_at": "2024-12-31T23:59:59",
+  "access_key": "auto-pos-korean",
+  "items": [
+    {
+      "word": "Love",
+      "meaning": "명. 사랑, 사랑애/동. 사랑하다"
+    },
+    {
+      "word": "Beautiful",
+      "meaning": "형. 아름다운, 예쁜"
+    },
+    {
+      "word": "Quickly",
+      "meaning": "부. 빠르게, 신속하게"
+    },
+    {
+      "word": "Run",
+      "meaning": "동. 달리다, 뛰다"
+    },
+    {
+      "word": "Happiness",
+      "meaning": "명. 행복, 기쁨"
+    }
+  ]
+}
+
+### 4. 단어장과 단어들을 한 번에 생성 (자동 품사 추출 테스트 - 영어)
+POST http://localhost:8000/v1/vocab-list/with-items
+Content-Type: application/json
+
+{
+  "title": "자동 품사 추출 테스트 (영어)",
+  "description": "영어 품사 표기에서 자동으로 추출하는 기능 테스트",
+  "expires_at": "2024-12-31T23:59:59",
+  "access_key": "auto-pos-english",
+  "items": [
+    {
+      "word": "Love",
+      "meaning": "N. love/V. love"
+    },
+    {
+      "word": "Beautiful",
+      "meaning": "adj. beautiful, pretty"
+    },
+    {
+      "word": "Quickly",
+      "meaning": "adv. quickly, rapidly"
+    },
+    {
+      "word": "Run",
+      "meaning": "v. run, sprint"
+    },
+    {
+      "word": "Happiness",
+      "meaning": "n. happiness, joy"
+    },
+    {
+      "word": "In",
+      "meaning": "prep. in, within"
+    },
+    {
+      "word": "And",
+      "meaning": "conj. and, also"
+    },
+    {
+      "word": "Wow",
+      "meaning": "int. wow, oh"
+    },
+    {
+      "word": "He",
+      "meaning": "pron. he, him"
+    },
+    {
+      "word": "The",
+      "meaning": "art. the"
+    },
+    {
+      "word": "Three",
+      "meaning": "num. three, 3"
+    }
+  ]
+}
+
+### 5. 모든 단어장 목록 조회
+GET http://localhost:8000/v1/vocab-list/
+
+### 6. 단어장 상세 조회
+GET http://localhost:8000/v1/vocab-list/{{vocab_list_id}}
+
+### 7. 단어장 수정 (Access Key 필요)
+PUT http://localhost:8000/v1/vocab-list/{{vocab_list_id}}
+Content-Type: application/json
+
+{
+  "title": "수정된 제목",
+  "access_key": "my-secret-key-123",
+  "tags": ["1학년", "영어", "기초", "단어왕"]
+}
+
+### 8. 단어장에 단어 추가 (Access Key 필요) - 자동 품사 추출 테스트
+POST http://localhost:8000/v1/vocab-list/{{vocab_list_id}}/items?access_key=my-secret-key-123
+Content-Type: application/json
+
+{
+  "word": "apple",
+  "meaning": "명. 사과 - 과일의 한 종류로 빨간색 또는 녹색을 띠며 달콤한 맛이 나는 과일"
+}
+
+### 9. 단어장의 단어 목록 조회
+GET http://localhost:8000/v1/vocab-list/{{vocab_list_id}}/items
+
+### 10. 답변 제출 및 AI 평가 (DB 저장 없이 실시간 평가)
+POST http://localhost:8000/v1/answer
+Content-Type: application/json
+
+{
+  "vocab_item_id": "{{vocab_item_id}}",
+  "user_meaning": "사랑, 애정, 사랑하다"
+}
+
+### 11. 답변 제출 - 부분적으로 맞는 답변
+POST http://localhost:8000/v1/answer
+Content-Type: application/json
+
+{
+  "vocab_item_id": "{{vocab_item_id}}",
+  "user_meaning": "좋아하다"
+}
+
+### 12. 답변 제출 - 틀린 답변
+POST http://localhost:8000/v1/answer
+Content-Type: application/json
+
+{
+  "vocab_item_id": "{{vocab_item_id}}",
+  "user_meaning": "싫어하다, 미워하다"
+}
+
+### 13. 단어의 답변 목록 조회 (DB 저장을 하지 않으므로 빈 리스트)
+GET http://localhost:8000/v1/vocab-item/{{vocab_item_id}}/answers
+
+### 14. 단어 삭제 (Access Key 필요)
+DELETE http://localhost:8000/v1/vocab-list/items/{{vocab_item_id}}?access_key=my-secret-key-123
+
+### 15. 단어장 삭제 (Access Key 필요)
+DELETE http://localhost:8000/v1/vocab-list/{{vocab_list_id}}?access_key=my-secret-key-123
+
+### 16. 잘못된 Access Key로 단어장 수정 시도 (403 에러 예상)
+PUT http://localhost:8000/v1/vocab-list/{{vocab_list_id}}
+Content-Type: application/json
+
+{
+  "title": "잘못된 Access Key로 수정 시도",
+  "access_key": "wrong-access-key"
+}
+
+### 17. 태그로 필터링 - 1학년 관련 단어장만 조회
+GET http://localhost:8000/v1/vocab-list/?tags=1학년
+
+### 18. 태그로 필터링 - 토익 관련 단어장만 조회
+GET http://localhost:8000/v1/vocab-list/?tags=토익
+
+### 19. 태그로 필터링 - 영어 관련 단어장만 조회
+GET http://localhost:8000/v1/vocab-list/?tags=영어
+
+### 20. 태그로 필터링 - 여러 태그로 필터링 (쉼표로 구분)
+GET http://localhost:8000/v1/vocab-list/?tags=영어,시험
+>>>>>>> f417104b5291f33fd4b76b159ca571ca2b6a48c6
