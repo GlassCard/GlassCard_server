@@ -1,0 +1,392 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/hello/User
+Accept: application/json
+
+###
+
+### Health Check
+GET http://127.0.0.1:8000/health
+Accept: application/json
+
+###
+
+### Get system stats
+GET http://127.0.0.1:8000/stats
+Accept: application/json
+
+###
+
+### Get synonyms for a word
+GET http://127.0.0.1:8000/synonyms/행복하다
+Accept: application/json
+
+###
+
+### Get synonyms for another word
+GET http://127.0.0.1:8000/synonyms/기쁘다
+Accept: application/json
+
+###
+
+### Compare Korean words - Same meaning, same POS (동의어)
+POST http://127.0.0.1:8000/compare?meaning=행복하다&user_input=기쁘다
+Accept: application/json
+
+###
+
+### Compare Korean words - Same meaning, different POS
+POST http://127.0.0.1:8000/compare?meaning=행복&user_input=행복하다
+Accept: application/json
+
+###
+
+### Compare Korean words - Different meaning
+POST http://127.0.0.1:8000/compare?meaning=사과&user_input=바나나
+Accept: application/json
+
+###
+
+### Compare Korean phrases with keywords
+POST http://127.0.0.1:8000/compare?meaning=열심히 공부하다&user_input=부지런히 학습하다
+Accept: application/json
+
+###
+
+### Compare with partial match
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=좋아하다
+Accept: application/json
+
+###
+
+### Compare different length inputs
+POST http://127.0.0.1:8000/compare?meaning=먹다&user_input=식사를 하다
+Accept: application/json
+
+###
+
+### Test emotion words
+POST http://127.0.0.1:8000/compare?meaning=슬프다&user_input=우울하다
+Accept: application/json
+
+###
+
+### Test action words
+POST http://127.0.0.1:8000/compare?meaning=걷다&user_input=산책하다
+Accept: application/json
+
+###
+
+### Test noun synonyms
+POST http://127.0.0.1:8000/compare?meaning=친구&user_input=벗
+Accept: application/json
+
+###
+
+### Test POS input - Verb form
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=동.사랑하다
+Accept: application/json
+
+###
+
+### Test POS input - Noun form
+POST http://127.0.0.1:8000/compare?meaning=사랑&user_input=명.사랑
+Accept: application/json
+
+###
+
+### Test POS input - Multiple forms
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=동.사랑하다/명.사랑
+Accept: application/json
+
+###
+
+### Test POS input - Different spacing
+POST http://127.0.0.1:8000/compare?meaning=행복하다&user_input=동 . 행복하다
+Accept: application/json
+
+###
+
+### Test POS input - No space
+POST http://127.0.0.1:8000/compare?meaning=공부하다&user_input=동공부하다
+Accept: application/json
+
+###
+
+### Test POS input with synonym
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=동.좋아하다
+Accept: application/json
+
+###
+
+### Test incomplete POS input - Only verb tag
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=동.
+Accept: application/json
+
+###
+
+### Test incomplete POS input - Only noun tag
+POST http://127.0.0.1:8000/compare?meaning=사랑&user_input=명.
+Accept: application/json
+
+###
+
+### Test incomplete POS input - Only adjective tag
+POST http://127.0.0.1:8000/compare?meaning=행복하다&user_input=형.
+Accept: application/json
+
+###
+
+### Test incomplete POS input - Tag with space
+POST http://127.0.0.1:8000/compare?meaning=공부하다&user_input=동 .
+Accept: application/json
+
+###
+
+### Test incomplete POS input - Just tag without dot
+POST http://127.0.0.1:8000/compare?meaning=먹다&user_input=동
+Accept: application/json
+
+###
+
+### Compare auto-guessed vs user-provided POS - Same word
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=사랑하다
+Accept: application/json
+
+###
+
+### Compare auto-guessed vs user-provided POS - User provided
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=동.사랑하다
+Accept: application/json
+
+###
+
+### Compare auto-guessed vs user-provided POS - Multiple forms
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=동.사랑하다/명.사랑
+Accept: application/json
+
+###
+
+### Test ambiguous word - Auto guess
+POST http://127.0.0.1:8000/compare?meaning=먹다&user_input=먹기
+Accept: application/json
+
+###
+
+### Test ambiguous word - User provided
+POST http://127.0.0.1:8000/compare?meaning=먹다&user_input=명.먹기
+Accept: application/json
+
+###
+
+### Test comma-separated words - Two synonyms
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=사랑하다, 좋아하다
+Accept: application/json
+
+###
+
+### Test comma-separated words - Three synonyms
+POST http://127.0.0.1:8000/compare?meaning=행복하다&user_input=행복하다, 기쁘다, 즐겁다
+Accept: application/json
+
+###
+
+### Test comma-separated words - Mixed types
+POST http://127.0.0.1:8000/compare?meaning=공부하다&user_input=공부하다, 학습, 배우다
+Accept: application/json
+
+###
+
+### Test comma-separated words with spaces
+POST http://127.0.0.1:8000/compare?meaning=먹다&user_input=먹다 , 식사하다
+Accept: application/json
+
+###
+
+### Test comma-separated words - One correct, one wrong
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=사랑하다, 바나나
+Accept: application/json
+
+###
+
+### Test comma-separated words - All wrong
+POST http://127.0.0.1:8000/compare?meaning=사과&user_input=바나나, 오렌지
+Accept: application/json
+
+###
+
+### 1. 기본 비교 테스트
+POST http://127.0.0.1:8000/compare?meaning=좋아해&user_input=사랑
+Content-Type: application/json
+
+###
+
+### 2. 품사 정보가 포함된 입력 테스트
+POST http://127.0.0.1:8000/compare?meaning=좋아하다&user_input=동. 사랑하다
+Content-Type: application/json
+
+###
+
+### 3. 여러 품사 형태 테스트
+POST http://127.0.0.1:8000/compare?meaning=사랑해&user_input=동. 사랑하다 / 명. 사랑
+Content-Type: application/json
+
+###
+
+### 4. 불완전한 품사 입력 테스트
+POST http://127.0.0.1:8000/compare?meaning=사랑해&user_input=동.
+Content-Type: application/json
+
+###
+
+### 5. 쉼표로 구분된 여러 단어 테스트
+POST http://127.0.0.1:8000/compare?meaning=사과&user_input=바나나, 오렌지
+Content-Type: application/json
+
+###
+
+### 6. 복합 테스트 - 여러 단어와 품사 정보
+POST http://127.0.0.1:8000/compare?meaning=사랑해&user_input=바나나, 사랑하다, 멜론
+Content-Type: application/json
+
+###
+
+### 7. 모든 단어 고려 점수 계산 테스트 (새로운 기능)
+POST http://127.0.0.1:8000/compare?meaning=행복하다&user_input=기쁘다, 즐겁다, 신나다
+Content-Type: application/json
+
+###
+
+### 8. 품사 일치와 의미 유사도 복합 테스트
+POST http://127.0.0.1:8000/compare?meaning=동. 먹다&user_input=동. 섭취하다, 명. 음식
+Content-Type: application/json
+
+###
+
+### 9. 자동 품사 추측 vs 사용자 제공 품사 비교
+POST http://127.0.0.1:8000/compare?meaning=사랑하다&user_input=사랑
+Content-Type: application/json
+
+###
+
+### 10. 성능 테스트 - 많은 단어 비교
+POST http://127.0.0.1:8000/compare?meaning=행복하다&user_input=기쁘다, 즐겁다, 신나다, 만족하다, 희열하다, 환희하다, 기뻐하다, 즐거워하다
+Content-Type: application/json
+
+###
+
+### 11. 성능 테스트 - 복잡한 품사 정보
+POST http://127.0.0.1:8000/compare?meaning=동. 공부하다&user_input=동. 학습하다 / 명. 공부 / 형. 학구열적인, 동. 연구하다
+Content-Type: application/json
+
+###
+
+### 12. 빠른 단어 검색 테스트 (새로운 기능)
+POST http://127.0.0.1:8000/search_word?user_input=사랑&top_k=5
+Content-Type: application/json
+
+###
+
+### 13. 빠른 단어 검색 - 여러 단어
+POST http://127.0.0.1:8000/search_word?user_input=행복하다, 기쁘다&top_k=10
+Content-Type: application/json
+
+###
+
+### 14. 빠른 단어 검색 - 품사 정보 포함
+POST http://127.0.0.1:8000/search_word?user_input=동. 먹다&top_k=5
+Content-Type: application/json
+
+###
+
+### 15. 단어 추가 테스트
+POST http://127.0.0.1:8000/add_word?word=프로그래밍&meaning=programming&pos=명사
+Content-Type: application/json
+
+###
+
+### 16. 단어장 통계 확인
+GET http://127.0.0.1:8000/word_database/stats
+
+###
+
+### 17. 단어장 목록 확인
+GET http://127.0.0.1:8000/word_database/list?page=1&page_size=10
+
+###
+
+### 18. 동의어 사전 테스트
+GET http://127.0.0.1:8000/synonyms/안녕
+
+###
+
+### 19. 시스템 통계 확인 (성능 정보 포함)
+GET http://127.0.0.1:8000/stats
+
+###
+
+### 20. 건강 상태 확인
+GET http://127.0.0.1:8000/health
+
+###
+
+### GlassCard API 테스트
+
+### 1. 기본 정보 확인
+GET http://127.0.0.1:8000/
+Content-Type: application/json
+
+### 2. 헬스 체크
+GET http://127.0.0.1:8000/health
+Content-Type: application/json
+
+### 3. 단어장 통계 조회
+GET http://127.0.0.1:8000/api/v1/word-stats
+Content-Type: application/json
+
+### 4. 기본 의미 비교 (쉼표로 구분된 단어들)
+POST http://127.0.0.1:8000/api/v1/compare?meaning=사랑,좋아해,행복&user_input=행복한,좋아하다,사랑하다,사랑,멜론
+Content-Type: application/json
+
+### 5. 품사 정보가 포함된 의미 비교
+POST http://127.0.0.1:8000/api/v1/compare?meaning=동.사랑하다,좋아하다/명.사랑&user_input=동.사랑하다,좋아하다/명.사랑
+Content-Type: application/json
+
+### 6. 불완전한 품사 입력 테스트
+POST http://127.0.0.1:8000/api/v1/compare?meaning=사랑,좋아해&user_input=동.
+Content-Type: application/json
+
+### 7. 단어장에 단어 추가
+POST http://127.0.0.1:8000/api/v1/add-word?word=기쁨&meaning=기쁘다,즐겁다,환희&pos=명사
+Content-Type: application/json
+
+### 8. 단어장에서 빠른 검색
+GET http://127.0.0.1:8000/api/v1/search?query=사랑&top_k=3
+Content-Type: application/json
+
+### 9. 품사 분석 테스트
+GET http://127.0.0.1:8000/api/v1/analyze-pos?text=나는 행복하게 살고 싶다
+Content-Type: application/json
+
+### 10. 복잡한 의미 비교 (여러 품사)
+POST http://127.0.0.1:8000/api/v1/compare?meaning=동.걱정하다,염려하다/명.걱정,염려&user_input=걱정하다,불안하다,근심하다
+Content-Type: application/json
+
+### 11. 새로운 단어 자동 학습 테스트
+POST http://127.0.0.1:8000/api/v1/compare?meaning=감사,고마움&user_input=고맙다,감사하다,은혜
+Content-Type: application/json
+
+### 12. 단어장 확장 후 통계 확인
+GET http://127.0.0.1:8000/api/v1/word-stats
+Content-Type: application/json
+
+### 13. 성능 테스트 - 여러 단어 동시 비교
+POST http://127.0.0.1:8000/api/v1/compare?meaning=사랑,행복,기쁨,감사,축하&user_input=사랑하다,행복하다,기쁘다,고맙다,축하하다
+Content-Type: application/json
+
+###
