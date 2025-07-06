@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer
 import uvicorn
 
@@ -9,6 +10,15 @@ app = FastAPI(
     title="GlassCard - 한국어 단어 의미 비교 시스템",
     description="한국어 단어 및 구문을 의미론적 유사도와 품사를 고려해 비교하는 시스템",
     version="1.0.0"
+)
+
+# CORS 미들웨어 추가
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 개발 환경에서는 모든 origin 허용
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
 )
 
 @app.on_event("startup")
