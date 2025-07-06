@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer
 import uvicorn
+import os
 
 from app.api.routes import router, init_services
 
@@ -26,9 +27,31 @@ async def startup_event():
     """앱 시작 시 초기화"""
     print("GlassCard 시스템을 시작합니다...")
     
-    # 모델 로드 (더 작은 모델 사용)
+    # Hugging Face 토큰 설정 (선택사항)
+    hf_token = os.getenv("HUGGINGFACE_TOKEN")
+    if hf_token:
+        print("Hugging Face 토큰이 설정되었습니다.")
+        os.environ["HUGGINGFACE_HUB_TOKEN"] = hf_token
+    
+    # 모델 로드 (더 작고 안정적인 모델 사용)
     print("sentence-transformers 모델을 로드하는 중...")
-    model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L6-v2')
+    try:
+        # 더 작은 모델로 변경하여 다운로드 속도 향상 및 인증 문제 해결
+        model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L6-v2')
+        print("모델 로드 성공!")
+    except Exception as e:
+        print(f"기본 모델 로드 실패: {e}")
+        print("대체 모델을 시도합니다...")
+        try:
+            # 더 작은 한국어 모델 사용
+            model = SentenceTransformer('sentence-transformers/distiluse-base-multilingual-cased-v2')
+            print("대체 모델 로드 성공!")
+        except Exception as e2:
+            print(f"대체 모델 로드도 실패: {e2}")
+            print("가장 기본적인 모델을 시도합니다...")
+            # 가장 기본적인 모델
+            model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+            print("기본 모델 로드 성공!")
     
     # 서비스 초기화
     print("서비스들을 초기화하는 중...")
