@@ -15,7 +15,6 @@ RUN apt-get update && \
 # Python 패키지 설치
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir huggingface-hub>=0.20.0 && \
     pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 코드 복사
