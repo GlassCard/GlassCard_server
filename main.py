@@ -26,9 +26,9 @@ async def startup_event():
     """앱 시작 시 초기화"""
     print("GlassCard 시스템을 시작합니다...")
     
-    # 모델 로드
+    # 모델 로드 (더 작은 모델 사용)
     print("sentence-transformers 모델을 로드하는 중...")
-    model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L6-v2')
     
     # 서비스 초기화
     print("서비스들을 초기화하는 중...")
@@ -54,4 +54,4 @@ async def health_check():
     return {"status": "healthy", "service": "GlassCard"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
