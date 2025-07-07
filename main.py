@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer
 import uvicorn
 import os
+import gc
 
 from app.api.routes import router, init_services
 
@@ -27,17 +28,21 @@ async def startup_event():
     """앱 시작 시 초기화"""
     print("GlassCard 시스템을 시작합니다...")
     
+    # 메모리 최적화
+    gc.collect()
+    
     # Hugging Face 토큰 설정 (선택사항)
     hf_token = os.getenv("HUGGINGFACE_TOKEN")
     if hf_token:
         print("Hugging Face 토큰이 설정되었습니다.")
         os.environ["HUGGINGFACE_HUB_TOKEN"] = hf_token
     
-    # 모델 로드 (더 작고 안정적인 모델 사용)
+    # 모델 로드 (메모리 효율적인 모델 사용)
     print("sentence-transformers 모델을 로드하는 중...")
     try:
-        # 더 작은 모델로 변경하여 다운로드 속도 향상 및 인증 문제 해결
-        model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L6-v2')
+        # 가장 가벼운 모델부터 시도
+        print("가장 가벼운 모델을 로드합니다...")
+        model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
         print("모델 로드 성공!")
     except Exception as e:
         print(f"기본 모델 로드 실패: {e}")
@@ -49,13 +54,25 @@ async def startup_event():
         except Exception as e2:
             print(f"대체 모델 로드도 실패: {e2}")
             print("가장 기본적인 모델을 시도합니다...")
-            # 가장 기본적인 모델
-            model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-            print("기본 모델 로드 성공!")
+            try:
+                # 가장 기본적인 모델
+                model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L6-v2')
+                print("기본 모델 로드 성공!")
+            except Exception as e3:
+                print(f"모든 모델 로드 실패: {e3}")
+                print("메모리 부족으로 인해 모델 로드에 실패했습니다.")
+                print("다음 중 하나를 시도해보세요:")
+                print("1. 더 많은 메모리 확보")
+                print("2. HUGGINGFACE_TOKEN 환경 변수 설정")
+                print("3. 더 작은 모델 사용")
+                raise e3
     
     # 서비스 초기화
     print("서비스들을 초기화하는 중...")
     init_services(model)
+    
+    # 메모리 정리
+    gc.collect()
     
     print("GlassCard 시스템이 성공적으로 시작되었습니다!")
 

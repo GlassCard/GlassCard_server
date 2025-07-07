@@ -9,3 +9,5 @@ huggingface-hub
 transformers
 torch
 konlpy
+psutil
+mangum

@@ -1,0 +1,32 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# 시스템 패키지 설치 (최소한만)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    default-jdk \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# 환경 변수 설정 (메모리 최적화)
+ENV PYTHONPATH=/app
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV JAVA_TOOL_OPTIONS="-Xmx256m -Xms128m"
+ENV PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:64"
+
+# Python 패키지 설치 (최소 버전)
+COPY requirements_minimal.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements_minimal.txt
+
+# 애플리케이션 코드 복사
+COPY . .
+
+# 포트 노출
+EXPOSE 8000
+
+# 메모리 최적화된 실행
+CMD ["python", "run_optimized.py"] 

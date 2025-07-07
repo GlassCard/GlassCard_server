@@ -79,6 +79,44 @@ python main.py
 uvicorn main:app --reload
 ```
 
+## 🚀 배포
+
+### Vercel 배포 (제한적 기능)
+
+Vercel의 serverless 환경 제약으로 인해 AI 모델 기능이 제한됩니다:
+
+1. **가벼운 버전 사용**:
+   ```bash
+   # requirements_vercel.txt 사용
+   pip install -r requirements_vercel.txt
+   ```
+
+2. **Vercel 배포**:
+   - GitHub 저장소를 Vercel에 연결
+   - `main_vercel.py`와 `requirements_vercel.txt` 사용
+   - 제한된 기능: 간단한 키워드 매칭만 가능
+
+### Railway/Render 배포 (권장)
+
+전체 기능을 사용하려면 Railway나 Render를 사용하세요:
+
+1. **Railway 배포**:
+   ```bash
+   # Railway CLI 설치
+   npm install -g @railway/cli
+   
+   # 배포
+   railway login
+   railway init
+   railway up
+   ```
+
+2. **Render 배포**:
+   - Render 대시보드에서 새 Web Service 생성
+   - GitHub 저장소 연결
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+
 ## 🔧 문제 해결
 
 ### Hugging Face 401 Unauthorized 오류
@@ -96,6 +134,43 @@ uvicorn main:app --reload
    ```bash
    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
    ```
+
+### 메모리 부족 오류 (512MB 제한 환경)
+
+512MB 메모리 제한 환경에서 실행하는 방법:
+
+1. **메모리 최적화 스크립트 사용** (권장):
+   ```bash
+   python run_optimized.py
+   ```
+
+2. **최소 의존성 설치**:
+   ```bash
+   pip install -r requirements_minimal.txt
+   ```
+
+3. **Docker 최적화 버전**:
+   ```bash
+   docker build -f Dockerfile.optimized -t glasscard-optimized .
+   docker run -p 8000:8000 glasscard-optimized
+   ```
+
+4. **환경 변수 설정**:
+   ```bash
+   export JAVA_TOOL_OPTIONS="-Xmx256m -Xms128m"
+   export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:64"
+   python main.py
+   ```
+
+5. **모델 크기 비교**:
+   - `all-MiniLM-L6-v2` (약 80MB) - 가장 가벼움
+   - `distiluse-base-multilingual-cased-v2` (약 200MB)
+   - `paraphrase-multilingual-MiniLM-L6-v2` (약 300MB)
+
+6. **시스템 메모리 확보**:
+   - 다른 프로그램 종료
+   - 브라우저 탭 정리
+   - 불필요한 프로세스 종료
 
 ## 📚 API 문서
 
