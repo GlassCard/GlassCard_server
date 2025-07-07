@@ -1,5 +1,7 @@
 from typing import Dict, List
 from sentence_transformers import SentenceTransformer, util
+import torch
+import gc
 from ..utils.text_processor import (
     parse_pos_input, parse_comma_separated_input, 
     extract_words_from_pos_input, check_incomplete_pos_input,
@@ -13,9 +15,16 @@ class SimilarityService:
     def calculate_similarity(self, text1: str, text2: str) -> float:
         """두 텍스트 간의 의미 유사도를 계산합니다."""
         try:
-            embedding1 = self.model.encode(text1, convert_to_tensor=True)
-            embedding2 = self.model.encode(text2, convert_to_tensor=True)
-            similarity = util.pytorch_cos_sim(embedding1, embedding2).item()
+            # 메모리 효율적인 방식으로 임베딩 계산
+            with torch.no_grad():  # 그래디언트 계산 비활성화로 메모리 절약
+                embedding1 = self.model.encode(text1, convert_to_tensor=True)
+                embedding2 = self.model.encode(text2, convert_to_tensor=True)
+                similarity = util.pytorch_cos_sim(embedding1, embedding2).item()
+                
+                # 메모리 정리
+                del embedding1, embedding2
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+                
             return similarity
         except Exception as e:
             print(f"유사도 계산 오류: {e}")
