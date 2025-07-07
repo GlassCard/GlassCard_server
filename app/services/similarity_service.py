@@ -58,13 +58,19 @@ class SimilarityService:
         # 키워드 매칭 점수
         keyword_score = self._calculate_keyword_score(meaning, user_input)
         
-        # 종합 점수 계산
+        # 종합 점수 계산 (더 관대한 가중치)
         total_score = (
-            semantic_similarity * 0.4 +
-            pos_matching_score * 0.3 +
+            semantic_similarity * 0.5 +
+            pos_matching_score * 0.2 +
             synonym_score * 0.2 +
             keyword_score * 0.1
         )
+        
+        # 보너스 점수: 의미 유사도가 높으면 추가 점수
+        if semantic_similarity > 0.6:
+            total_score += 0.1
+        elif semantic_similarity > 0.4:
+            total_score += 0.05
         
         return {
             "semantic_similarity": semantic_similarity,
@@ -81,7 +87,7 @@ class SimilarityService:
     def _calculate_pos_matching_score(self, meaning_pos: Dict, user_pos: Dict) -> float:
         """품사 매칭 점수를 계산합니다."""
         if not meaning_pos or not user_pos:
-            return 0.5  # 품사 정보가 없으면 중간 점수
+            return 0.7  # 품사 정보가 없으면 더 높은 점수
         
         matching_count = 0
         total_count = 0
@@ -93,7 +99,13 @@ class SimilarityService:
             else:
                 total_count += 1
         
-        return matching_count / total_count if total_count > 0 else 0.0
+        base_score = matching_count / total_count if total_count > 0 else 0.0
+        
+        # 품사가 일치하지 않아도 기본 점수 부여
+        if base_score == 0.0 and (meaning_pos or user_pos):
+            return 0.3  # 품사가 다르더라도 기본 점수
+        
+        return base_score
     
     def _calculate_semantic_similarity(self, meaning_words: List[str], user_words: List[str]) -> float:
         """의미 유사도를 계산합니다."""
@@ -111,18 +123,22 @@ class SimilarityService:
     
     def _calculate_synonym_score(self, meaning_words: List[str], user_words: List[str]) -> float:
         """동의어 확장 점수를 계산합니다."""
-        # 간단한 동의어 사전 (실제로는 더 큰 사전 사용)
+        # 확장된 동의어 사전 (더 관대한 매칭)
         synonym_dict = {
-            "사랑": ["사랑하다", "좋아하다", "애정", "연애"],
-            "행복": ["행복하다", "기쁘다", "즐겁다", "만족"],
-            "슬픔": ["슬프다", "우울하다", "비통하다", "애도"],
-            "기쁨": ["기쁘다", "즐겁다", "행복하다", "환희"],
-            "화": ["화나다", "분노", "격분", "노여움"],
-            "걱정": ["걱정하다", "염려", "불안", "근심"],
-            "희망": ["희망하다", "바라다", "기대", "꿈"],
-            "사과": ["미안하다", "죄송하다", "사죄", "용서"],
-            "감사": ["고맙다", "감사하다", "은혜", "고마움"],
-            "축하": ["축하하다", "경사", "기념", "축복"]
+            "사랑": ["사랑하다", "좋아하다", "애정", "연애", "사랑스럽다", "귀엽다", "예쁘다"],
+            "행복": ["행복하다", "기쁘다", "즐겁다", "만족", "신나다", "좋다", "훌륭하다"],
+            "슬픔": ["슬프다", "우울하다", "비통하다", "애도", "속상하다", "마음이 아프다"],
+            "기쁨": ["기쁘다", "즐겁다", "행복하다", "환희", "신나다", "좋다", "만족"],
+            "화": ["화나다", "분노", "격분", "노여움", "짜증나다", "열받다", "화가 나다"],
+            "걱정": ["걱정하다", "염려", "불안", "근심", "불안하다", "걱정스럽다"],
+            "희망": ["희망하다", "바라다", "기대", "꿈", "원하다", "원망하다"],
+            "사과": ["미안하다", "죄송하다", "사죄", "용서", "죄송합니다", "미안합니다"],
+            "감사": ["고맙다", "감사하다", "은혜", "고마움", "감사합니다", "고맙습니다"],
+            "축하": ["축하하다", "경사", "기념", "축복", "축하합니다", "축하해"],
+            "학습": ["공부하다", "배우다", "익히다", "습득하다", "연습하다"],
+            "노력": ["열심히", "부지런히", "성실히", "최선을 다하다"],
+            "성공": ["성취하다", "달성하다", "이루다", "해내다", "성공하다"],
+            "실패": ["실패하다", "실수하다", "틀리다", "잘못하다", "놓치다"]
         }
         
         matching_count = 0
