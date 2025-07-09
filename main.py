@@ -15,7 +15,7 @@ app = FastAPI(
 # CORS 미들웨어 추가
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://glass-card-iota.vercel.app"],  # Vercel 배포 도메인
+    allow_origins=["*"],  # Vercel 배포 도메인
     allow_credentials=True,
     allow_methods=["*"],  # 모든 HTTP 메서드 허용
     allow_headers=["*"],  # 모든 헤더 허용
@@ -54,4 +54,5 @@ async def health_check():
     return {"status": "healthy", "service": "GlassCard"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # 외부 접근을 위해 0.0.0.0으로 설정
+    uvicorn.run(app, host="0.0.0.0", port=8000)

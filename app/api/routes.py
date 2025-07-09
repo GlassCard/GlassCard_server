@@ -30,9 +30,35 @@ async def compare_words(request: CompareRequest):
         if "error" in analysis_result:
             return analysis_result
         
+        # 개별 단어 비교 결과 추가
+        individual_comparisons = similarity_service.compare_individual_words(
+            analysis_result["meaning_words"], 
+            analysis_result["user_words"]
+        )
+        
+        # 유사도 점수 로그 출력
+        print(f"🔍 유사도 분석 결과:")
+        print(f"   입력: '{request.meaning}' vs '{request.user_input}'")
+        print(f"   총 점수: {analysis_result['total_score']:.3f}")
+        print(f"   의미 유사도: {analysis_result['semantic_similarity']:.3f}")
+        print(f"   품사 매칭: {analysis_result['pos_matching_score']:.3f}")
+        print(f"   동의어 점수: {analysis_result['synonym_score']:.3f}")
+        print(f"   키워드 점수: {analysis_result['keyword_score']:.3f}")
+        
+        # 개별 비교 결과 출력 (상위 3개)
+        print(f"   개별 비교 (상위 3개):")
+        for i, comp in enumerate(individual_comparisons[:3], 1):
+            match_type = "🎯 정확한 일치" if comp['is_exact_match'] else \
+                        "⭐ 높은 유사도" if comp['is_high_similarity'] else \
+                        "🔄 중간 유사도" if comp['is_medium_similarity'] else "📉 낮은 유사도"
+            print(f"     {i}. {comp['meaning_word']} ↔ {comp['user_word']}: {comp['similarity_score']:.3f} ({match_type})")
+        
+        print("-" * 60)
+        
         return {
             "success": True,
-            "analysis": analysis_result
+            "analysis": analysis_result,
+            "individual_comparisons": individual_comparisons
         }
         
     except Exception as e:
@@ -55,9 +81,35 @@ async def compare_words_query(
         if "error" in analysis_result:
             return analysis_result
         
+        # 개별 단어 비교 결과 추가
+        individual_comparisons = similarity_service.compare_individual_words(
+            analysis_result["meaning_words"], 
+            analysis_result["user_words"]
+        )
+        
+        # 유사도 점수 로그 출력
+        print(f"🔍 유사도 분석 결과 (쿼리 파라미터):")
+        print(f"   입력: '{meaning}' vs '{user_input}'")
+        print(f"   총 점수: {analysis_result['total_score']:.3f}")
+        print(f"   의미 유사도: {analysis_result['semantic_similarity']:.3f}")
+        print(f"   품사 매칭: {analysis_result['pos_matching_score']:.3f}")
+        print(f"   동의어 점수: {analysis_result['synonym_score']:.3f}")
+        print(f"   키워드 점수: {analysis_result['keyword_score']:.3f}")
+        
+        # 개별 비교 결과 출력 (상위 3개)
+        print(f"   개별 비교 (상위 3개):")
+        for i, comp in enumerate(individual_comparisons[:3], 1):
+            match_type = "🎯 정확한 일치" if comp['is_exact_match'] else \
+                        "⭐ 높은 유사도" if comp['is_high_similarity'] else \
+                        "🔄 중간 유사도" if comp['is_medium_similarity'] else "📉 낮은 유사도"
+            print(f"     {i}. {comp['meaning_word']} ↔ {comp['user_word']}: {comp['similarity_score']:.3f} ({match_type})")
+        
+        print("-" * 60)
+        
         return {
             "success": True,
-            "analysis": analysis_result
+            "analysis": analysis_result,
+            "individual_comparisons": individual_comparisons
         }
         
     except Exception as e:

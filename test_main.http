@@ -198,6 +198,50 @@ Accept: application/json
 ###
 
 ### Test comma-separated words - Mixed types
+
+###
+
+### Test comma-separated words - No spaces (NEW)
+POST http://127.0.0.1:8000/api/v1/compare
+Content-Type: application/json
+
+{
+  "meaning": "감자,고구마",
+  "user_input": "감자,당근"
+}
+
+###
+
+### Test comma-separated words - With spaces (NEW)
+POST http://127.0.0.1:8000/api/v1/compare
+Content-Type: application/json
+
+{
+  "meaning": "감자, 고구마, 당근",
+  "user_input": "감자, 당근, 양파"
+}
+
+###
+
+### Test comma-separated words - Multiple words (NEW)
+POST http://127.0.0.1:8000/api/v1/compare
+Content-Type: application/json
+
+{
+  "meaning": "사과,바나나,오렌지",
+  "user_input": "사과,포도,키위"
+}
+
+###
+
+### Test individual word comparisons (NEW)
+POST http://127.0.0.1:8000/api/v1/compare
+Content-Type: application/json
+
+{
+  "meaning": "사랑,행복",
+  "user_input": "애정,기쁨"
+}
 POST http://127.0.0.1:8000/compare?meaning=공부하다&user_input=공부하다, 학습, 배우다
 Accept: application/json
 

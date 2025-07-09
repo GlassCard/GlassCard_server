@@ -56,10 +56,11 @@ def parse_pos_input(text: str) -> Dict[str, List[str]]:
     return pos_info
 
 def parse_comma_separated_input(text: str) -> List[str]:
-    """쉼표로 구분된 입력을 파싱합니다."""
+    """쉼표로 구분된 입력을 파싱합니다. (콤마 기준 분리, 각 단어의 앞뒤 공백 제거)"""
     if not text:
         return []
     
+    # 콤마로 분리하고 각 단어의 앞뒤 공백만 제거
     words = [word.strip() for word in text.split(',')]
     return [word for word in words if word]
 

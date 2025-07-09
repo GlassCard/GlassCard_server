@@ -1,7 +1,5 @@
 from typing import Dict, List
 from sentence_transformers import SentenceTransformer, util
-import torch
-import gc
 from ..utils.text_processor import (
     parse_pos_input, parse_comma_separated_input, 
     extract_words_from_pos_input, check_incomplete_pos_input,
@@ -15,16 +13,14 @@ class SimilarityService:
     def calculate_similarity(self, text1: str, text2: str) -> float:
         """두 텍스트 간의 의미 유사도를 계산합니다."""
         try:
-            # 메모리 효율적인 방식으로 임베딩 계산
-            with torch.no_grad():  # 그래디언트 계산 비활성화로 메모리 절약
-                embedding1 = self.model.encode(text1, convert_to_tensor=True)
-                embedding2 = self.model.encode(text2, convert_to_tensor=True)
-                similarity = util.pytorch_cos_sim(embedding1, embedding2).item()
-                
-                # 메모리 정리
-                del embedding1, embedding2
-                torch.cuda.empty_cache() if torch.cuda.is_available() else None
-                
+            # 임베딩 계산
+            embedding1 = self.model.encode(text1, convert_to_tensor=True)
+            embedding2 = self.model.encode(text2, convert_to_tensor=True)
+            similarity = util.cos_sim(embedding1, embedding2).item()
+            
+            # 메모리 정리
+            del embedding1, embedding2
+            
             return similarity
         except Exception as e:
             print(f"유사도 계산 오류: {e}")
@@ -67,19 +63,19 @@ class SimilarityService:
         # 키워드 매칭 점수
         keyword_score = self._calculate_keyword_score(meaning, user_input)
         
-        # 종합 점수 계산 (더 관대한 가중치)
+        # 종합 점수 계산 (더 엄격한 가중치)
         total_score = (
-            semantic_similarity * 0.5 +
+            semantic_similarity * 0.6 +
             pos_matching_score * 0.2 +
-            synonym_score * 0.2 +
-            keyword_score * 0.1
+            synonym_score * 0.15 +
+            keyword_score * 0.05
         )
         
-        # 보너스 점수: 의미 유사도가 높으면 추가 점수
-        if semantic_similarity > 0.6:
-            total_score += 0.1
-        elif semantic_similarity > 0.4:
+        # 보너스 점수: 의미 유사도가 매우 높을 때만 추가 점수
+        if semantic_similarity > 0.8:
             total_score += 0.05
+        elif semantic_similarity > 0.6:
+            total_score += 0.02
         
         return {
             "semantic_similarity": semantic_similarity,
@@ -96,7 +92,7 @@ class SimilarityService:
     def _calculate_pos_matching_score(self, meaning_pos: Dict, user_pos: Dict) -> float:
         """품사 매칭 점수를 계산합니다."""
         if not meaning_pos or not user_pos:
-            return 0.7  # 품사 정보가 없으면 더 높은 점수
+            return 0.3  # 품사 정보가 없으면 낮은 점수
         
         matching_count = 0
         total_count = 0
@@ -110,9 +106,9 @@ class SimilarityService:
         
         base_score = matching_count / total_count if total_count > 0 else 0.0
         
-        # 품사가 일치하지 않아도 기본 점수 부여
+        # 품사가 일치하지 않으면 낮은 점수
         if base_score == 0.0 and (meaning_pos or user_pos):
-            return 0.3  # 품사가 다르더라도 기본 점수
+            return 0.1  # 품사가 다르면 낮은 점수
         
         return base_score
     
@@ -132,22 +128,22 @@ class SimilarityService:
     
     def _calculate_synonym_score(self, meaning_words: List[str], user_words: List[str]) -> float:
         """동의어 확장 점수를 계산합니다."""
-        # 확장된 동의어 사전 (더 관대한 매칭)
+        # 엄격한 동의어 사전 (정확한 동의어만)
         synonym_dict = {
-            "사랑": ["사랑하다", "좋아하다", "애정", "연애", "사랑스럽다", "귀엽다", "예쁘다"],
-            "행복": ["행복하다", "기쁘다", "즐겁다", "만족", "신나다", "좋다", "훌륭하다"],
-            "슬픔": ["슬프다", "우울하다", "비통하다", "애도", "속상하다", "마음이 아프다"],
-            "기쁨": ["기쁘다", "즐겁다", "행복하다", "환희", "신나다", "좋다", "만족"],
-            "화": ["화나다", "분노", "격분", "노여움", "짜증나다", "열받다", "화가 나다"],
-            "걱정": ["걱정하다", "염려", "불안", "근심", "불안하다", "걱정스럽다"],
-            "희망": ["희망하다", "바라다", "기대", "꿈", "원하다", "원망하다"],
-            "사과": ["미안하다", "죄송하다", "사죄", "용서", "죄송합니다", "미안합니다"],
-            "감사": ["고맙다", "감사하다", "은혜", "고마움", "감사합니다", "고맙습니다"],
-            "축하": ["축하하다", "경사", "기념", "축복", "축하합니다", "축하해"],
-            "학습": ["공부하다", "배우다", "익히다", "습득하다", "연습하다"],
-            "노력": ["열심히", "부지런히", "성실히", "최선을 다하다"],
-            "성공": ["성취하다", "달성하다", "이루다", "해내다", "성공하다"],
-            "실패": ["실패하다", "실수하다", "틀리다", "잘못하다", "놓치다"]
+            "사랑": ["사랑하다", "애정", "연애"],
+            "행복": ["행복하다", "기쁘다", "즐겁다"],
+            "슬픔": ["슬프다", "우울하다", "비통하다"],
+            "기쁨": ["기쁘다", "즐겁다", "환희"],
+            "화": ["화나다", "분노", "격분"],
+            "걱정": ["걱정하다", "염려", "불안"],
+            "희망": ["희망하다", "바라다", "기대"],
+            "사과": ["미안하다", "죄송하다"],
+            "감사": ["고맙다", "감사하다"],
+            "축하": ["축하하다", "경사"],
+            "학습": ["공부하다", "배우다"],
+            "노력": ["열심히", "부지런히"],
+            "성공": ["성취하다", "달성하다"],
+            "실패": ["실패하다", "실수하다"]
         }
         
         matching_count = 0
@@ -183,4 +179,30 @@ class SimilarityService:
                 if meaning_keyword == user_keyword:
                     matching_count += 1
         
-        return matching_count / (len(meaning_keywords) + len(user_keywords) - matching_count) if (len(meaning_keywords) + len(user_keywords) - matching_count) > 0 else 0.0 
+        return matching_count / (len(meaning_keywords) + len(user_keywords) - matching_count) if (len(meaning_keywords) + len(user_keywords) - matching_count) > 0 else 0.0
+    
+    def compare_individual_words(self, meaning_words: List[str], user_words: List[str]) -> List[Dict]:
+        """개별 단어들 간의 비교 결과를 반환합니다."""
+        comparisons = []
+        
+        for i, meaning_word in enumerate(meaning_words):
+            for j, user_word in enumerate(user_words):
+                similarity = self.calculate_similarity(meaning_word, user_word)
+                
+                comparison = {
+                    "meaning_word": meaning_word,
+                    "user_word": user_word,
+                    "similarity_score": similarity,
+                    "meaning_index": i,
+                    "user_index": j,
+                    "is_exact_match": meaning_word == user_word,
+                    "is_high_similarity": similarity > 0.7,
+                    "is_medium_similarity": 0.4 <= similarity <= 0.7,
+                    "is_low_similarity": similarity < 0.4
+                }
+                comparisons.append(comparison)
+        
+        # 유사도 점수 기준으로 정렬 (높은 점수부터)
+        comparisons.sort(key=lambda x: x["similarity_score"], reverse=True)
+        
+        return comparisons 
